@@ -18,30 +18,43 @@ const app = express();
 app.set("trust proxy", 1);
 
 // ==========================
-// ✅ ALLOWED ORIGINS
+// ✅ ROBUST CORS CONFIGURATION (Production Ready)
 // ==========================
+const allowedOrigins = [
+    'https://cult.fitness',
+    'https://www.cult.fitness',
+    'http://localhost:3000',
+    'http://localhost:5173'
+];
+
 const corsOptions = {
     origin: function (origin, callback) {
-        const allowedOrigins = [
-            'https://cult.fitness',
-            'https://www.cult.fitness',
-            'http://localhost:3000',
-            'http://localhost:5173'
-        ];
-
+        // Allow requests with no origin (like mobile apps or curl requests)
         if (!origin) return callback(null, true);
 
-        if (allowedOrigins.includes(origin)) {
-            return callback(null, origin); // 🔥 IMPORTANT FIX
+        if (allowedOrigins.indexOf(origin) !== -1) {
+            callback(null, true); // Reflect origin back
+        } else {
+            console.warn(`CORS blocked for origin: ${origin}`);
+            callback(null, false); // Block other origins
         }
-
-        return callback(null, false);
     },
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"]
+    allowedHeaders: [
+        "Content-Type", 
+        "Authorization", 
+        "X-Requested-With", 
+        "Accept", 
+        "Origin"
+    ],
+    optionsSuccessStatus: 200 // Some legacy browsers (IE11, various SmartTVs) choke on 204
 };
 
+// 1. Enable pre-flight for all routes
+app.options('*', cors(corsOptions));
+
+// 2. Apply CORS middleware
 app.use(cors(corsOptions));
 
 // ==========================
