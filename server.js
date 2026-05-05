@@ -28,18 +28,18 @@ const allowedOrigins = [
 ];
 
 // ==========================
-// ✅ CORS CONFIG (FIXED)
+// ✅ CORS CONFIG (FINAL FIX)
 // ==========================
 app.use(cors({
     origin: function (origin, callback) {
-        // allow server-to-server / postman requests
+        // allow tools like Postman / server-to-server
         if (!origin) return callback(null, true);
 
         if (allowedOrigins.includes(origin)) {
             return callback(null, true);
         }
 
-        // ❌ DO NOT THROW ERROR (important)
+        // IMPORTANT: do NOT throw error
         return callback(null, false);
     },
     credentials: true,
@@ -47,8 +47,16 @@ app.use(cors({
     allowedHeaders: ["Content-Type", "Authorization"]
 }));
 
-// ✅ Handle preflight explicitly
-app.options(/.*/, cors());
+// ==========================
+// ✅ PRE-FLIGHT FIX (IMPORTANT)
+// ==========================
+// This ensures OPTIONS request never breaks
+app.use((req, res, next) => {
+    if (req.method === "OPTIONS") {
+        return res.sendStatus(204);
+    }
+    next();
+});
 
 // ==========================
 // MIDDLEWARE
@@ -83,7 +91,7 @@ app.use((req, res) => {
 // ERROR HANDLER
 // ==========================
 app.use((err, req, res, next) => {
-    console.error(err.message);
+    console.error(err);
 
     res.status(500).json({
         success: false,
