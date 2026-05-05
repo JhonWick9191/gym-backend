@@ -20,22 +20,19 @@ app.set("trust proxy", 1);
 // ==========================
 // ✅ ALLOWED ORIGINS
 // ==========================
-const allowedOrigins = [
-    'https://cult.fitness',
-    'https://www.cult.fitness',
-    'http://localhost:3000',
-    'http://localhost:5173'
-];
-
-// ==========================
-// ✅ CORS (CLEAN + SAFE)
-// ==========================
 const corsOptions = {
     origin: function (origin, callback) {
+        const allowedOrigins = [
+            'https://cult.fitness',
+            'https://www.cult.fitness',
+            'http://localhost:3000',
+            'http://localhost:5173'
+        ];
+
         if (!origin) return callback(null, true);
 
         if (allowedOrigins.includes(origin)) {
-            return callback(null, true);
+            return callback(null, origin); // 🔥 IMPORTANT FIX
         }
 
         return callback(null, false);
