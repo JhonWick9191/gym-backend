@@ -18,13 +18,22 @@ initCronJob();
 
 const app = express();
 
+// ✅ TRUST PROXY (IMPORTANT for cookies behind Nginx/Cloudflare)
+app.set("trust proxy", 1);
+
+// ✅ CORS (FIXED)
+app.use(cors({
+    origin: ['https://cult.fitness', 'https://www.cult.fitness'],
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+}));
+
+// ✅ HANDLE PREFLIGHT (VERY IMPORTANT)
+app.options('*', cors());
+
 // Middleware to parse JSON and Cookies
 app.use(express.json());
 app.use(cookieParser());
-app.use(cors({
-    origin: 'https://cult.fitness', // Vite default port
-    credentials: true
-}));
 
 // Routes
 app.use('/api/v1', userRoutes);
