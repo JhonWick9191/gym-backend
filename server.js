@@ -52,7 +52,7 @@ const corsOptions = {
 };
 
 // 1. Enable pre-flight for all routes
-app.options('*', cors(corsOptions));
+
 
 // 2. Apply CORS middleware
 app.use(cors(corsOptions));
