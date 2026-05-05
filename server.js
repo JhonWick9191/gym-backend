@@ -28,7 +28,7 @@ const allowedOrigins = [
 ];
 
 // ==========================
-// ✅ CORS CONFIG (FINAL CLEAN FIX)
+// ✅ CORS (CLEAN + SAFE)
 // ==========================
 const corsOptions = {
     origin: function (origin, callback) {
@@ -46,9 +46,6 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
-
-// ⚡ IMPORTANT: DO NOT manually block OPTIONS
-// (Express CORS handles it automatically)
 
 // ==========================
 // MIDDLEWARE
