@@ -82,9 +82,10 @@ const loginAdmin = async (req, res) => {
 
         // 5. Send Token in Cookie
         res.cookie('token', token, {
-            httpOnly: true, // Prevents JavaScript from accessing the cookie
-            secure: false,  // Set to true in production with HTTPS
-            maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days in milliseconds
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production', // true in production
+            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax', // cross-site in production
+            maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
         });
 
         res.status(200).json({

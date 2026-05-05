@@ -23,11 +23,26 @@ app.set("trust proxy", 1);
 
 
 
-// ✅ CORS (FIXED)
+// ✅ CORS Configuration
+const allowedOrigins = [
+    'https://cult.fitness',
+    'https://www.cult.fitness',
+    'http://localhost:3000', // For local development
+    'http://localhost:5173'  // For Vite development
+];
+
 app.use(cors({
-    origin: ['https://cult.fitness', 'https://www.cult.fitness'],
+    origin: function (origin, callback) {
+        // allow requests with no origin (like mobile apps or curl requests)
+        if (!origin) return callback(null, true);
+        if (allowedOrigins.indexOf(origin) === -1) {
+            return callback(new Error('The CORS policy for this site does not allow access from the specified Origin.'), false);
+        }
+        return callback(null, true);
+    },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
 
@@ -36,9 +51,27 @@ app.use(cors({
 app.use(express.json());
 app.use(cookieParser());
 
-// Routes
-app.use('/api/v1', userRoutes);
+// Routes (Admin first for specificity)
 app.use('/api/v1/admin', adminRoutes);
+app.use('/api/v1', userRoutes);
+
+// 404 Handler for undefined routes
+app.use((req, res, next) => {
+    res.status(404).json({
+        success: false,
+        message: `Route not found - ${req.originalUrl}`
+    });
+});
+
+// Global Error Handler
+app.use((err, req, res, next) => {
+    console.error(err.stack);
+    res.status(500).json({
+        success: false,
+        message: 'Something went wrong!',
+        error: process.env.NODE_ENV === 'development' ? err.message : 'Internal Server Error'
+    });
+});
 
 // Root route for testing
 app.get('/', (req, res) => {
