@@ -21,6 +21,8 @@ const app = express();
 // ✅ TRUST PROXY (IMPORTANT for cookies behind Nginx/Cloudflare)
 app.set("trust proxy", 1);
 
+
+
 // ✅ CORS (FIXED)
 app.use(cors({
     origin: ['https://cult.fitness', 'https://www.cult.fitness'],
@@ -28,8 +30,7 @@ app.use(cors({
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
 }));
 
-// ✅ HANDLE PREFLIGHT (VERY IMPORTANT)
-app.options('*', cors());
+
 
 // Middleware to parse JSON and Cookies
 app.use(express.json());
