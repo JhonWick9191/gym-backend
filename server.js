@@ -2,6 +2,7 @@ const express = require('express');
 const dotenv = require('dotenv');
 const cookieParser = require('cookie-parser');
 const cors = require('cors');
+
 const connectDB = require('./config/db');
 const userRoutes = require('./routes/userRoutes');
 const adminRoutes = require('./routes/adminRoutes');
@@ -16,48 +17,61 @@ const app = express();
 
 app.set("trust proxy", 1);
 
-// ✅ Allowed Origins
+// ==========================
+// ✅ ALLOWED ORIGINS
+// ==========================
 const allowedOrigins = [
     'https://cult.fitness',
     'https://www.cult.fitness',
-    'https://api.cult.fitness',
     'http://localhost:3000',
     'http://localhost:5173'
 ];
 
-// ✅ FIXED CORS (IMPORTANT)
+// ==========================
+// ✅ CORS CONFIG (FIXED)
+// ==========================
 app.use(cors({
     origin: function (origin, callback) {
-        // allow requests with no origin (Postman, mobile apps)
+        // allow server-to-server / postman requests
         if (!origin) return callback(null, true);
 
         if (allowedOrigins.includes(origin)) {
             return callback(null, true);
-        } else {
-            return callback(new Error("Not allowed by CORS: " + origin));
         }
+
+        // ❌ DO NOT THROW ERROR (important)
+        return callback(null, false);
     },
     credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"]
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"]
 }));
 
-// ❌ IMPORTANT: DO NOT use app.options(cors()) anymore
-// (remove this completely)
+// ✅ Handle preflight explicitly
+app.options("*", cors());
 
-// Middleware
+// ==========================
+// MIDDLEWARE
+// ==========================
 app.use(express.json());
 app.use(cookieParser());
 
-// Routes
+// ==========================
+// ROUTES
+// ==========================
 app.use('/api/v1/admin', adminRoutes);
 app.use('/api/v1', userRoutes);
 
-// Health check
+// ==========================
+// HEALTH CHECK
+// ==========================
 app.get('/', (req, res) => {
     res.send('Gym Management Backend is Running...');
 });
 
-// 404
+// ==========================
+// 404 HANDLER
+// ==========================
 app.use((req, res) => {
     res.status(404).json({
         success: false,
@@ -65,7 +79,9 @@ app.use((req, res) => {
     });
 });
 
-// Error handler
+// ==========================
+// ERROR HANDLER
+// ==========================
 app.use((err, req, res, next) => {
     console.error(err.message);
 
@@ -76,8 +92,11 @@ app.use((err, req, res, next) => {
     });
 });
 
-// Start server
+// ==========================
+// START SERVER
+// ==========================
 const PORT = process.env.PORT || 5000;
+
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 });
