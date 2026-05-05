@@ -28,35 +28,27 @@ const allowedOrigins = [
 ];
 
 // ==========================
-// ✅ CORS CONFIG (FINAL FIX)
+// ✅ CORS CONFIG (FINAL CLEAN FIX)
 // ==========================
-app.use(cors({
+const corsOptions = {
     origin: function (origin, callback) {
-        // allow tools like Postman / server-to-server
         if (!origin) return callback(null, true);
 
         if (allowedOrigins.includes(origin)) {
             return callback(null, true);
         }
 
-        // IMPORTANT: do NOT throw error
         return callback(null, false);
     },
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"]
-}));
+};
 
-// ==========================
-// ✅ PRE-FLIGHT FIX (IMPORTANT)
-// ==========================
-// This ensures OPTIONS request never breaks
-app.use((req, res, next) => {
-    if (req.method === "OPTIONS") {
-        return res.sendStatus(204);
-    }
-    next();
-});
+app.use(cors(corsOptions));
+
+// ⚡ IMPORTANT: DO NOT manually block OPTIONS
+// (Express CORS handles it automatically)
 
 // ==========================
 // MIDDLEWARE
