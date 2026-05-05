@@ -27,8 +27,9 @@ app.set("trust proxy", 1);
 const allowedOrigins = [
     'https://cult.fitness',
     'https://www.cult.fitness',
-    'http://localhost:3000', // For local development
-    'http://localhost:5173'  // For Vite development
+    'https://api.cult.fitness',
+    'http://localhost:3000',
+    'http://localhost:5173'
 ];
 
 app.use(cors({
@@ -55,6 +56,11 @@ app.use(cookieParser());
 app.use('/api/v1/admin', adminRoutes);
 app.use('/api/v1', userRoutes);
 
+// Root route for testing
+app.get('/', (req, res) => {
+    res.send('Gym Management Backend is Running...');
+});
+
 // 404 Handler for undefined routes
 app.use((req, res, next) => {
     res.status(404).json({
@@ -71,11 +77,6 @@ app.use((err, req, res, next) => {
         message: 'Something went wrong!',
         error: process.env.NODE_ENV === 'development' ? err.message : 'Internal Server Error'
     });
-});
-
-// Root route for testing
-app.get('/', (req, res) => {
-    res.send('Gym Management Backend is Running...');
 });
 
 // Start the server
