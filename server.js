@@ -15,47 +15,11 @@ initCronJob();
 
 const app = express();
 
-app.set("trust proxy", 1);
-
-// ==========================
-// ✅ ROBUST CORS CONFIGURATION (Production Ready)
-// ==========================
-const allowedOrigins = [
-    'https://cult.fitness',
-    'https://www.cult.fitness',
-    'http://localhost:3000',
-    'http://localhost:5173'
-];
-
-const corsOptions = {
-    origin: function (origin, callback) {
-        // Allow requests with no origin (like mobile apps or curl requests)
-        if (!origin) return callback(null, true);
-
-        if (allowedOrigins.indexOf(origin) !== -1) {
-            callback(null, true); // Reflect origin back
-        } else {
-            console.warn(`CORS blocked for origin: ${origin}`);
-            callback(null, false); // Block other origins
-        }
-    },
-    credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
-    allowedHeaders: [
-        "Content-Type", 
-        "Authorization", 
-        "X-Requested-With", 
-        "Accept", 
-        "Origin"
-    ],
-    optionsSuccessStatus: 200 // Some legacy browsers (IE11, various SmartTVs) choke on 204
-};
 
 // 1. Enable pre-flight for all routes
 
 
-// 2. Apply CORS middleware
-app.use(cors(corsOptions));
+
 
 // ==========================
 // MIDDLEWARE
