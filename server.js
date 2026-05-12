@@ -8,23 +8,41 @@ const userRoutes = require('./routes/userRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 
 dotenv.config();
+
+// ==========================
+// DATABASE CONNECTION
+// ==========================
 connectDB();
 
+// ==========================
+// CRON JOB
+// ==========================
 const initCronJob = require('./utils/cronJob');
 initCronJob();
 
+// ==========================
+// EXPRESS APP
+// ==========================
 const app = express();
 
-
-// 1. Enable pre-flight for all routes
-
-
-
+// ==========================
+// CORS CONFIGURATION
+// ==========================
+app.use(cors({
+    origin: [
+        'https://cult.fitness',
+        'https://www.cult.fitness'
+    ],
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+}));
 
 // ==========================
 // MIDDLEWARE
 // ==========================
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 // ==========================
@@ -51,15 +69,17 @@ app.use((req, res) => {
 });
 
 // ==========================
-// ERROR HANDLER
+// GLOBAL ERROR HANDLER
 // ==========================
 app.use((err, req, res, next) => {
-    console.error(err);
+    console.error('Error:', err);
 
     res.status(500).json({
         success: false,
         message: 'Internal Server Error',
-        error: process.env.NODE_ENV === 'development' ? err.message : undefined
+        error: process.env.NODE_ENV === 'development'
+            ? err.message
+            : undefined
     });
 });
 
