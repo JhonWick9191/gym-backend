@@ -52,7 +52,9 @@ const createAdmin = async (req, res) => {
 
         const option = {
             expiresIn: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
-            httpOnly: true
+            httpOnly: true,
+                secure: true,
+                sameSite: "None"
         }
 
         const token = jwt.sign(payload, process.env.JWT_SECRET, {
@@ -103,10 +105,10 @@ const loginAdmin = async (req, res) => {
 
         // 3. Check if password matches
         console.log(admin.password)
-      
-        const isMatch = await bcrypt.compare(password,admin.password)
+
+        const isMatch = await bcrypt.compare(password, admin.password)
         console.log(password)
-        console.log("this prints ",isMatch)
+        console.log("this prints ", isMatch)
         if (!isMatch) {
             return res.status(401).json({
                 success: false,
@@ -123,19 +125,21 @@ const loginAdmin = async (req, res) => {
             const token = jwt.sign(payloade, process.env.JWT_SECRET, {
                 expiresIn: "5h"
             })
-          
+
 
             const option = {
                 expires: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
-                httpOnly: true
+                httpOnly: true,
+                secure: true,
+                sameSite: "None"
             }
 
-            res.cookie("token" ,token ,option).status(200).json({
-                success:true,
+            res.cookie("token", token, option).status(200).json({
+                success: true,
                 token,
                 admin,
-                message:"Login Sucessfully",
-                
+                message: "Login Sucessfully",
+
             })
         }
 
