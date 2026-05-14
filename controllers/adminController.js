@@ -1,12 +1,20 @@
 const Admin = require('../models/adminModel');
 const jwt = require('jsonwebtoken');
-
+const bcrypt = require("bcryptjs")
+require("dotenv").config()
 // @desc    Register a new admin
 // @route   POST /api/v1/admin/register
 // @access  Public
 const createAdmin = async (req, res) => {
     try {
         const { name, email, password } = req.body;
+
+        if (!name || !email || !password) {
+            return res.status(404).json({
+                success: false,
+                message: "Please fill all input feilds"
+            })
+        }
 
         // 1. Check if admin already exists
         const adminExists = await Admin.findOne({ email });
@@ -17,23 +25,50 @@ const createAdmin = async (req, res) => {
             });
         }
 
+        // bcrypt the password and save it in db 
+        const hashpassword = await bcrypt.hash(password, 10)
+
+        console.log(hashpassword)
+
+
+        // create jwt 
+
+
+
+
         // 2. Create the admin (Password will be hashed by schema middleware)
         const admin = await Admin.create({
             name,
             email,
-            password
+            password: hashpassword,
+            role: "Admin"
         });
 
-        res.status(201).json({
+        const payload = ({
+            name: admin.name,
+            email: admin.email,
+            role: admin.role
+        })
+
+        const option = {
+            expiresIn: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
+            httpOnly: true
+        }
+
+        const token = jwt.sign(payload, process.env.JWT_SECRET, {
+            expiresIn: "5h"
+        })
+
+        res.cookie("token", token, option).status(200).json({
             success: true,
-            message: 'Admin registered successfully',
-            admin: {
-                id: admin._id,
-                name: admin.name,
-                email: admin.email
-            }
-        });
+            token,
+            message: "Admin Register Sucessfully",
+            data: admin
+        })
+
+
     } catch (error) {
+        console.log(error)
         res.status(500).json({
             success: false,
             message: 'Server Error',
@@ -67,38 +102,46 @@ const loginAdmin = async (req, res) => {
         }
 
         // 3. Check if password matches
-        const isMatch = await admin.matchPassword(password);
+        console.log(admin.password)
+      
+        const isMatch = await bcrypt.compare(password,admin.password)
+        console.log(password)
+        console.log("this prints ",isMatch)
         if (!isMatch) {
             return res.status(401).json({
                 success: false,
                 message: 'Invalid credentials'
             });
+        } else {
+            // create payload 
+            const payloade = {
+                email: admin.email,
+                id: admin._id,
+                role: admin.role
+            }
+
+            const token = jwt.sign(payloade, process.env.JWT_SECRET, {
+                expiresIn: "5h"
+            })
+          
+
+            const option = {
+                expires: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
+                httpOnly: true
+            }
+
+            res.cookie("token" ,token ,option).status(200).json({
+                success:true,
+                token,
+                admin,
+                message:"Login Sucessfully",
+                
+            })
         }
 
-        // 4. Create JWT Token
-        const token = jwt.sign({ id: admin._id }, process.env.JWT_SECRET, {
-            expiresIn: '7d'
-        });
-
-        // 5. Send Token in Cookie
-        res.cookie('token', token, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production', // true in production
-            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax', // cross-site in production
-            maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
-        });
-
-        res.status(200).json({
-            success: true,
-            message: 'Login successful',
-            admin: {
-                id: admin._id,
-                name: admin.name,
-                email: admin.email
-            }
-        });
 
     } catch (error) {
+        console.log(error)
         res.status(500).json({
             success: false,
             message: 'Server Error',
